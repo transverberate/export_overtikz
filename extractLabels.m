@@ -20,30 +20,15 @@ function replacementTextNodes = extractLabels(elements)
     replacementTextNodes = [results{:}];
 end
 
-function replacementTextNodes = extractLabelsAxes(axesHandle)
+function replacementTextNodes = extractLabelsAxes(axisHandle)
     import tex_export.*
     
-    rplNodeTitle = extractIfNotEmpty(axesHandle.Title, 'normalize', axesHandle);
-    rplXLabel = extractIfNotEmpty(axesHandle.XLabel, 'normalize', axesHandle);
-    rplYLabel = extractIfNotEmpty(axesHandle.YLabel, 'normalize', axesHandle);
+    rplNodeTitle = extractIfNotEmpty(axisHandle.Title, 'normalize', axisHandle);
+    rplXLabel = extractIfNotEmpty(axisHandle.XLabel, 'normalize', axisHandle);
+    rplYLabel = extractIfNotEmpty(axisHandle.YLabel, 'normalize', axisHandle);
     
-    x_tix = getXtickPositions(axesHandle);
-    x_tix_labels = axesHandle.XTickLabels;
-    rplXTix = arrayfun( ...
-        @(x,y,txt) ReplacementTextNode(...
-            [x, y], makeTexMath(txt{:}), 'scale', 0.8, ...
-            'anchor', ReplacementTextNodeAnchor.North), ...
-        x_tix(:,1), x_tix(:,2), x_tix_labels ...
-    );
-
-    y_tix = getYtickPositions(axesHandle);
-    y_tix_labels = axesHandle.YTickLabels;
-    rplYTix = arrayfun( ...
-        @(x,y,txt) ReplacementTextNode(...
-            [x, y], makeTexMath(txt{:}), 'scale', 0.8, ...
-            'anchor', ReplacementTextNodeAnchor.East), ...
-        y_tix(:,1), y_tix(:,2), y_tix_labels ...
-    );
+    rplXTix = ReplacementTicks.fromAxisProperty(axisHandle, 'XTickLabels');
+    rplYTix = ReplacementTicks.fromAxisProperty(axisHandle, 'YTickLabels');
     
     replacementTextNodes = [
         rplNodeTitle 
@@ -61,28 +46,10 @@ function rplNode = extractIfNotEmpty(varargin)
     p.addOptional('normalize', []);
     p.parse(varargin{:})
     textElement = p.Results.textElement;
-    axesHandle = p.Results.normalize;
+    axisHandle = p.Results.normalize;
     rplNode = [];
     if ~isempty(textElement.String)
         rplNode = ReplacementTextNode.fromTextObj( ...
-            textElement, 'normalize', axesHandle);
+            textElement, 'normalize', axisHandle);
     end
-end
-
-function coordArr = getXtickPositions(axesHandle)
-    import tex_export.*
-    y_d = min(axesHandle.YLim);
-    x_tix = axesHandle.XTick;
-    C = arrayfun(@(x_d) dataToNorm([x_d, y_d], axesHandle), ...
-        x_tix.', 'UniformOutput', false);
-    coordArr = cell2mat(C);
-end
-
-function coordArr = getYtickPositions(axesHandle)
-    import tex_export.*
-    x_d = min(axesHandle.XLim);
-    y_tix = axesHandle.YTick;
-    C = arrayfun(@(y_d) dataToNorm([x_d, y_d], axesHandle), ...
-        y_tix.', 'UniformOutput', false);
-    coordArr = cell2mat(C);
 end
