@@ -32,6 +32,36 @@ function resPos = dataToNorm(varargin)
     w_d = diff(x_dlim);
     h_d = diff(y_dlim);
     
+    if strcmp(axesHandle.PlotBoxAspectRatioMode, 'manual')
+        x_old = x_a;
+        y_old = y_a;
+        w_old = w_a;
+        h_old = h_a;
+        
+        pboxx = axesHandle.PlotBoxAspectRatio;
+        w_r = pboxx(1);
+        h_r = pboxx(2);
+        r_r = w_r/h_r;
+        h_target = w_old / r_r;
+        r_new = w_old / h_target;
+        if r_new >= 1
+            w_new = w_old;
+            h_new = w_old / r_new;
+            x_new = x_old;
+            y_new = (h_old-h_new)/2 + y_old;
+        else
+            w_new = h_old * r_new;
+            h_new = h_old;
+            x_new = (w_old-w_new)/2 + x_old;
+            y_new = y_old;
+        end
+        
+        x_a = x_new;
+        y_a = y_new;
+        w_a = w_new;
+        h_a = h_new;
+    end
+    
     x_n = (x_d-x_dlim(1))*w_a/w_d + x_a;
     y_n = (y_d-y_dlim(1))*h_a/h_d + y_a;
     

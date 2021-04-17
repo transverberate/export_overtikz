@@ -83,7 +83,7 @@ classdef ReplacementTextNode < tex_export.ReplacementInterface
             isMath = p.Results.isMath;
             
             if ~isempty(axesNormalize)
-                position = dataCoord2Norm(textHandle, axesNormalize);
+                position = dataToNorm(textHandle.Position, axesNormalize);
             else
                 position = textHandle.Position(1:2);
             end
@@ -122,24 +122,4 @@ classdef ReplacementTextNode < tex_export.ReplacementInterface
                 'origContent', txt);
         end
     end
-end
-
-function normalizedPosition = dataCoord2Norm(elementHandle, axesHandle)
-    origUnits = elementHandle.Units;
-    elementHandle.Units = "normalized";
-    elementPosition = elementHandle.Position;
-    x = elementPosition(1);
-    y = elementPosition(2);
-
-    axesPosition = axesHandle.Position;
-    x_a = axesPosition(1);
-    y_a = axesPosition(2);
-    w_a = axesPosition(3);
-    h_a = axesPosition(4);
-
-    xn = x*w_a + x_a;
-    yn = y*h_a + y_a;
-
-    normalizedPosition = [xn, yn];
-    elementHandle.Units = origUnits;
 end
