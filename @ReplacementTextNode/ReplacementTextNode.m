@@ -1,13 +1,14 @@
 classdef ReplacementTextNode < tex_export.ReplacementInterface
     properties
         scale = 1;
-        nodeContent = '';
+        nodeContent = tex_export.TexContent('');
         anchor = tex_export.ReplacementTextNodeAnchor.Base;
         alignment = 'center';
         position = [0, 0];
         rotate = 0;
         eHandle = 0;
-        origContent = ''
+        origContent = '';
+        requirements = tex_export.ReplacementRequirementFlags();
     end
     methods
         function obj = ReplacementTextNode(varargin)
@@ -24,21 +25,23 @@ classdef ReplacementTextNode < tex_export.ReplacementInterface
             p.parse(varargin{:});
             
             obj.position = p.Results.position;
-            obj.nodeContent = char(p.Results.content);
+            obj.nodeContent = p.Results.content;
             obj.anchor = p.Results.anchor;
             obj.alignment = p.Results.alignment;
             obj.scale = p.Results.scale;
             obj.rotate = p.Results.rotate;
             obj.eHandle = p.Results.handle;
+            obj.requirements = tex_export.ReplacementRequirementFlags();
             if ~isempty(p.Results.origContent)
                 obj.origContent = p.Results.origContent;
             else
-                obj.origContent = obj.nodeContent;
+                obj.origContent = obj.nodeContent.originalInput;
             end
         end
         function strRes = toTikzNode(obj)
             x = obj.position(1);
             y = obj.position(2);
+            texStr = obj.nodeContent.toTexStr();
             strRes = sprintf([ ...
                 '\\node[anchor=%s, align=%s, scale=%f, rotate=%f]' ...
                 ' at (% 9.8f, % 9.8f) {%s};\n'],        ...
@@ -48,7 +51,7 @@ classdef ReplacementTextNode < tex_export.ReplacementInterface
                 obj.rotate,     ...
                 x,              ...
                 y,              ...
-                obj.nodeContent ...
+                texStr          ...
             );
         end
         function clearNode(obj)
@@ -61,12 +64,15 @@ classdef ReplacementTextNode < tex_export.ReplacementInterface
         end
         function resStr = restoreNode(obj)
             h = obj.eHandle;
-            resStr = obj.origContent;
+            resStr = obj.nodeContent.originalInput;
             if isvalid(h)
                 if isprop(h, 'String')
                     h.String = resStr;
                 end
             end
+        end
+        function requirements = getRequirements(obj)
+            requirements = obj.requirements;
         end
     end
     methods(Access = public, Static)
@@ -90,11 +96,10 @@ classdef ReplacementTextNode < tex_export.ReplacementInterface
             
             origContent = textHandle.String;
             
-            if isMath
-                nodeContent = makeTexMath(char(textHandle.String));
-            else
-                nodeContent = char(textHandle.String);
-            end
+            nodeContent = TexContent.fromStr(textHandle.String, ...
+                'ensureMath', isMath ...
+            );
+ 
 
             anchor = ReplacementTextNodeAnchor.fromTextProp(...
                 textHandle.HorizontalAlignment, ...
@@ -114,12 +119,35 @@ classdef ReplacementTextNode < tex_export.ReplacementInterface
                 'handle', textHandle, ...
                 'origContent', origContent);
         end
-        function obj = fromTicks(pos, txt, anchor)
+        function obj = fromTicks(varargin)
             import tex_export.*
+            
+            p = inputParser;
+            p.addRequired('pos');
+            p.addRequired('txt');
+            p.addOptional('anchor', ReplacementTextNodeAnchor.Base);
+            p.addOptional('horizontalCorrection', false);
+            p.parse(varargin{:});
+            
+            pos = p.Results.pos;
+            txt = p.Results.txt;
+            anchor = p.Results.anchor;
+            horizontalCorrection = p.Results.horizontalCorrection;
+            
+            nodeContent = TexContent.fromStr(txt, ...
+                'ensureMath', true, ...
+                'horizontalCorrection', horizontalCorrection ...
+            );
+            
             obj = ReplacementTextNode(...
-                pos, makeTexMath(txt), 'scale', 0.8, ...
+                pos, nodeContent, 'scale', 0.8, ...
                 'anchor', anchor, ...
                 'origContent', txt);
+            
+            if nodeContent.requiresNegativePhantom
+                obj.requirements.requireNegativePhantom = ...
+                    nodeContent.requiresNegativePhantom;
+            end
         end
     end
 end

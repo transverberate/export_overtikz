@@ -1,6 +1,7 @@
-function replacementTextNodes = extractLabels(elements)
+function [replacementTextNodes, requirements] = extractLabels(elements)
     import tex_export.*
     results = cell(length(elements), 1);
+    requirements = ReplacementRequirementFlags();
     i = 1;
     for element=elements.'
         if isgraphics(element, 'figure')
@@ -18,6 +19,13 @@ function replacementTextNodes = extractLabels(elements)
         i = i + 1;
     end
     replacementTextNodes = [results{:}];
+    
+    if ~isempty(replacementTextNodes)
+        reqArr = getRequirementsArr(replacementTextNodes);
+        requirements = ReplacementRequirementFlags.fromFlagArray(...
+             reqArr ...
+        );
+    end
 end
 
 function replacementTextNodes = extractLabelsAxes(axisHandle)

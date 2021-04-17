@@ -3,6 +3,7 @@ classdef ReplacementTicks < tex_export.ReplacementInterface
         axisHandle
         tickProperty
         tickLabelNodes
+        requirements = tex_export.ReplacementRequirementFlags;
     end
     methods
         function obj = ReplacementTicks(varargin)
@@ -35,6 +36,17 @@ classdef ReplacementTicks < tex_export.ReplacementInterface
             set(obj.axisHandle, obj.tickProperty, labels);
             resStr = labels;
         end
+        function requirements = getRequirements(obj)
+            import tex_export.* 
+            
+            requirements = obj.requirements;
+            if ~isempty(obj.tickLabelNodes)
+                reqArr = getRequirementsArr(obj.tickLabelNodes);
+                requirements = ReplacementRequirementFlags.fromFlagArray(...
+                     reqArr ...
+                );
+            end
+        end
     end
     methods(Access = public, Static)
         function obj = fromAxisProperty(axisHandle, tickProperty)
@@ -49,7 +61,9 @@ classdef ReplacementTicks < tex_export.ReplacementInterface
                 tickLabelNodes = arrayfun( ...
                     @(x,y,txt) ReplacementTextNode.fromTicks(...
                         [x, y], txt{:}, ...
-                        ReplacementTextNodeAnchor.North),...
+                        ReplacementTextNodeAnchor.North, ...
+                        'horizontalCorrection', true ...
+                    ), ...
                     x_tix(:,1), x_tix(:,2), x_tix_labels ...
                 );
                 
