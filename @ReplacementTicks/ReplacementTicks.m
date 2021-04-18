@@ -58,6 +58,11 @@ classdef ReplacementTicks < tex_export.ReplacementInterface
                 x_tix_labels = get(axisHandle, tickProperty);
                 x_tix = getXtickPositions(axisHandle);
                 
+                % these are usually placed too high move down
+                [M,~] = size(x_tix);
+                amnt = unitToNorm([0, 0.1], axisHandle, 'centimeters');
+                x_tix(:, 2) = x_tix(:, 2) - amnt(2)*ones(M, 1);
+                
                 tickLabelNodes = arrayfun( ...
                     @(x,y,txt) ReplacementTextNode.fromTicks(...
                         [x, y], txt{:}, ...
@@ -70,6 +75,11 @@ classdef ReplacementTicks < tex_export.ReplacementInterface
             elseif ~isempty(ymatches)
                 y_tix_labels = get(axisHandle, tickProperty);
                 y_tix = getYtickPositions(axisHandle);
+                
+                % these are usually placed too rightward move left
+                [M,~] = size(y_tix);
+                amnt = unitToNorm([0.05, 0], axisHandle, 'centimeters');
+                y_tix(:, 1) = y_tix(:, 1) - amnt(1)*ones(M, 1);
                 
                 tickLabelNodes = arrayfun( ...
                     @(x,y,txt) ReplacementTextNode.fromTicks(...
@@ -106,4 +116,16 @@ function coordArr = getYtickPositions(axisHandle)
     C = arrayfun(@(y_d) dataToNorm([x_d, y_d], axisHandle), ...
         y_tix.', 'UniformOutput', false);
     coordArr = cell2mat(C);
+end
+
+function resPos = unitToNorm(pos, axisHandle, unitName)
+    oldUnits = axisHandle.Units;
+    axisHandle.Units = unitName;
+    inUnits = axisHandle.Position(1:2);
+    axisHandle.Units = 'normalized';
+    normUnits = axisHandle.Position(1:2);
+    axisHandle.Units = oldUnits;
+    
+    coeff = normUnits./inUnits;
+    resPos = pos.*coeff;
 end
