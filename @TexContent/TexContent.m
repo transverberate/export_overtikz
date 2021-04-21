@@ -152,7 +152,7 @@ function [isNegative, resStr] = removeNegative(inStr)
 end
 
 function [isMath, resStr] = removeMath(inStr)
-    mathExp = '(?<!\\)\$(.*?)(?<!\\)\$';
+    mathExp = '^\s*(?<!\\)\$(.*?)(?<!\\)\$\s*$';
     tokens = regexp(inStr, mathExp, 'tokens');
     resStr = inStr;
     isMath = false;
