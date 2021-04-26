@@ -149,5 +149,31 @@ classdef ReplacementTextNode < tex_export.ReplacementInterface
                     nodeContent.requiresNegativePhantom;
             end
         end
+        function obj = fromMinimal(varargin)
+            import tex_export.*
+            
+            p = inputParser;
+            p.addRequired('pos');
+            p.addRequired('txt');
+            p.addRequired('scale');
+            p.addOptional('anchor', ReplacementTextNodeAnchor.Base);
+            p.addOptional('handle', gobjects(0));
+            p.parse(varargin{:});
+            
+            pos = p.Results.pos;
+            txt = p.Results.txt;
+            scale = p.Results.scale;
+            anchor = p.Results.anchor;
+            eHandle = p.Results.handle;
+            
+            nodeContent = TexContent.fromStr(txt);
+            
+            obj = ReplacementTextNode(...
+                pos, nodeContent, 'scale', scale, ...
+                'anchor', anchor, ...
+                'origContent', txt, ...
+                'handle', eHandle ...
+            );
+        end
     end
 end

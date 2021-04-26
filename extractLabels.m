@@ -9,6 +9,8 @@ function [replacementTextNodes, requirements] = extractLabels(elements)
             results{i} = extractLabels([element.Children; ax]);
         elseif isgraphics(element, 'axes')
             results{i} = extractLabelsAxes(element);
+        elseif isgraphics(element, 'legend')
+            results{i} = extractLegendTextNodes(element);
         elseif isgraphics(element, 'AnnotationPane')
             results{i} = extractLabels(element.Children);
         elseif isgraphics(element, 'textarrowshape') || isgraphics(element, 'textboxshape')
@@ -45,6 +47,39 @@ function replacementTextNodes = extractLabelsAxes(axisHandle)
         rplXTix
         rplYTix
     ].';
+end
+
+function rplNodes = extractLegendTextNodes(legendHandle)
+    import tex_export.*
+    legendPosition = legendHandle.Position;
+    legendTransform = diag([legendPosition(3:4), 1, 1]);
+    legendTransform(1:2,4) = legendPosition(1:2).';
+    nodeChildren = legendHandle.EntryContainer.NodeChildren;
+    N = length(nodeChildren);
+    rplNodes = cell(N, 1);
+    for i=1:N
+        child = nodeChildren(i);
+        textHandle = child.Children(2);
+        txtRaw = textHandle.String;
+        A = child.Children(1).Transform.Matrix;
+        iconX = A(1,4);
+        iconY = A(2,4);
+        iconW = A(1,1);
+        iconH = A(2,2);
+        yy = iconY + iconH/2;
+        xx = iconW + iconX;
+        p = [xx;yy;1;1];
+        q = legendTransform*p;
+        x = q(1);
+        y = q(2);
+        
+        rplNodes{i} = ReplacementTextNode.fromMinimal( ...
+            [x,y], txtRaw, 0.7, ...
+            ReplacementTextNodeAnchor.West, ...
+            textHandle ...
+        );
+    end
+    rplNodes = [rplNodes{:}];
 end
 
 function rplNode = extractIfNotEmpty(varargin)
