@@ -58,15 +58,28 @@ classdef ReplacementTicks < tex_export.ReplacementInterface
                 x_tix_labels = get(axisHandle, tickProperty);
                 x_tix = getXtickPositions(axisHandle);
                 
+                if isempty(x_tix)
+                    obj = [];
+                    return
+                end
+                
                 % these are usually placed too high move down
                 [M,~] = size(x_tix);
+                orientation = axisHandle.XAxisLocation;
+                if strcmpi(orientation, 'bottom')
+                    sgn = -1;
+                    anchor = ReplacementTextNodeAnchor.North;
+                else
+                    sgn = 1;
+                    anchor = ReplacementTextNodeAnchor.South;
+                end
                 amnt = unitToNorm([0, 0.1], axisHandle, 'centimeters');
-                x_tix(:, 2) = x_tix(:, 2) - amnt(2)*ones(M, 1);
+                x_tix(:, 2) = x_tix(:, 2) + sgn*amnt(2)*ones(M, 1);
                 
                 tickLabelNodes = arrayfun( ...
                     @(x,y,txt) ReplacementTextNode.fromTicks(...
                         [x, y], txt{:}, ...
-                        ReplacementTextNodeAnchor.North, ...
+                        anchor, ...
                         'horizontalCorrection', true ...
                     ), ...
                     x_tix(:,1), x_tix(:,2), x_tix_labels ...
@@ -76,15 +89,28 @@ classdef ReplacementTicks < tex_export.ReplacementInterface
                 y_tix_labels = get(axisHandle, tickProperty);
                 y_tix = getYtickPositions(axisHandle);
                 
+                if isempty(y_tix)
+                    obj = [];
+                    return
+                end
+                
                 % these are usually placed too rightward move left
                 [M,~] = size(y_tix);
+                orientation = axisHandle.YAxisLocation;
+                if strcmpi(orientation, 'left')
+                    sgn = -1;
+                    anchor = ReplacementTextNodeAnchor.East;
+                else
+                    sgn = 1;
+                    anchor = ReplacementTextNodeAnchor.West;
+                end
                 amnt = unitToNorm([0.05, 0], axisHandle, 'centimeters');
-                y_tix(:, 1) = y_tix(:, 1) - amnt(1)*ones(M, 1);
+                y_tix(:, 1) = y_tix(:, 1) + sgn*amnt(1)*ones(M, 1);
                 
                 tickLabelNodes = arrayfun( ...
                     @(x,y,txt) ReplacementTextNode.fromTicks(...
                         [x, y], txt{:}, ...
-                        ReplacementTextNodeAnchor.East), ...
+                        anchor), ...
                     y_tix(:,1), y_tix(:,2), y_tix_labels ...
                 );
             else
@@ -102,7 +128,12 @@ end
 
 function coordArr = getXtickPositions(axisHandle)
     import tex_export.*
-    y_d = min(axisHandle.YLim);
+    orientation = axisHandle.XAxisLocation;
+    if strcmpi(orientation, 'bottom')
+        y_d = min(axisHandle.YLim);
+    else
+        y_d = max(axisHandle.YLim);
+    end
     x_tix = axisHandle.XTick;
     C = arrayfun(@(x_d) dataToNorm([x_d, y_d], axisHandle), ...
         x_tix.', 'UniformOutput', false);
@@ -111,7 +142,12 @@ end
 
 function coordArr = getYtickPositions(axisHandle)
     import tex_export.*
-    x_d = min(axisHandle.XLim);
+    orientation = axisHandle.YAxisLocation;
+    if strcmpi(orientation, 'left')
+        x_d = min(axisHandle.XLim);
+    else
+        x_d = max(axisHandle.XLim);
+    end
     y_tix = axisHandle.YTick;
     C = arrayfun(@(y_d) dataToNorm([x_d, y_d], axisHandle), ...
         y_tix.', 'UniformOutput', false);
