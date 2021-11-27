@@ -119,19 +119,21 @@ classdef ReplacementTextNode < tex_export.ReplacementInterface
                 'handle', textHandle, ...
                 'origContent', origContent);
         end
-        function obj = fromTicks(varargin)
+        function obj = fromHandless(varargin)
             import tex_export.*
             
             p = inputParser;
             p.addRequired('pos');
             p.addRequired('txt');
             p.addOptional('anchor', ReplacementTextNodeAnchor.Base);
+            p.addOptional('scale', 1);
             p.addOptional('horizontalCorrection', false);
             p.parse(varargin{:});
             
             pos = p.Results.pos;
             txt = p.Results.txt;
             anchor = p.Results.anchor;
+            scaleAmnt = p.Results.scale;
             horizontalCorrection = p.Results.horizontalCorrection;
             
             nodeContent = TexContent.fromStr(txt, ...
@@ -140,7 +142,7 @@ classdef ReplacementTextNode < tex_export.ReplacementInterface
             );
             
             obj = ReplacementTextNode(...
-                pos, nodeContent, 'scale', 0.8, ...
+                pos, nodeContent, 'scale', scaleAmnt, ...
                 'anchor', anchor, ...
                 'origContent', txt);
             

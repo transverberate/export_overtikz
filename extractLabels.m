@@ -8,13 +8,19 @@ function [replacementTextNodes, requirements] = extractLabels(elements)
             ax = findall(element, 'Tag', 'scribeOverlay');
             results{i} = extractLabels([element.Children; ax]);
         elseif isgraphics(element, 'axes')
-            results{i} = extractLabelsAxes(element);
+            results{i} = [
+                extractLabelsAxes(element), extractLabels(element.Children)
+            ];
         elseif isgraphics(element, 'legend')
             results{i} = extractLegendTextNodes(element);
         elseif isgraphics(element, 'AnnotationPane')
             results{i} = extractLabels(element.Children);
-        elseif isgraphics(element, 'textarrowshape') || isgraphics(element, 'textboxshape')
+        elseif isgraphics(element, 'textarrowshape') || ...
+               isgraphics(element, 'textboxshape')
+                            
             results{i} = extractIfNotEmpty(element);
+        elseif isgraphics(element, 'GraphPlot')
+            results{i} = extractGraphPlot(element);
         else
             results{i} = [];
         end
@@ -37,8 +43,8 @@ function replacementTextNodes = extractLabelsAxes(axisHandle)
     rplXLabel = extractIfNotEmpty(axisHandle.XLabel, 'normalize', axisHandle);
     rplYLabel = extractIfNotEmpty(axisHandle.YLabel, 'normalize', axisHandle);
     
-    rplXTix = ReplacementTicks.fromAxisProperty(axisHandle, 'XTickLabels');
-    rplYTix = ReplacementTicks.fromAxisProperty(axisHandle, 'YTickLabels');
+    rplXTix = ReplacementPropertyCell.fromAxisProperty(axisHandle, 'XTickLabels');
+    rplYTix = ReplacementPropertyCell.fromAxisProperty(axisHandle, 'YTickLabels');
     
     replacementTextNodes = [
         rplNodeTitle 
@@ -80,6 +86,20 @@ function rplNodes = extractLegendTextNodes(legendHandle)
         );
     end
     rplNodes = [rplNodes{:}];
+end
+
+function replacementTextNodes = extractGraphPlot(graphHandle)
+    import tex_export.*
+    
+    rplGraphNodes = ReplacementPropertyCell.fromGraphPlot( ...
+        graphHandle, 'nodeLabel');
+    rplGraphEdges = ReplacementPropertyCell.fromGraphPlot( ...
+        graphHandle, 'edgeLabel');
+    
+    replacementTextNodes = [
+        rplGraphNodes
+        rplGraphEdges
+    ].';
 end
 
 function rplNode = extractIfNotEmpty(varargin)

@@ -20,9 +20,9 @@ function resPos = dataToNorm(varargin)
     if strcmp(axesHandle.XScale, 'log')
         x_func = @(x) log10(x);
     end
-    y_func = @(x) x;
+    y_func = @(y) y;
     if strcmp(axesHandle.YScale, 'log')
-        y_func = @(y) log1(y);
+        y_func = @(y) log10(y);
     end
     
     x_d = x_func(pos(1));
@@ -33,6 +33,14 @@ function resPos = dataToNorm(varargin)
     h_d = diff(y_dlim);
     
     if strcmp(axesHandle.PlotBoxAspectRatioMode, 'manual')
+        
+%         fig = gcf;
+%         figOldUnits = fig.Units;
+%         fig.Units = 'pixels';
+%         w_f = fig.Position(3);
+%         h_f = fig.Position(4);
+%         fig.Units = figOldUnits;
+        
         x_old = x_a;
         y_old = y_a;
         w_old = w_a;
