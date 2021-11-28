@@ -1,0 +1,7 @@
+1. Fix unit normalization/mapping when pbaspect is set manually
+
+
+2. Code exception for when the number of xticks/yticks exceeds the number of
+xticklabels/yticklabels (This can happen when x/yticks occur offscreen)
+so that the correct ticklabel appears at the correct location 
+(currently, will ascoiate labels with the first tick in the series, even if its offscreen)
