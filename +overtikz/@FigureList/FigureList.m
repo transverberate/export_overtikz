@@ -21,7 +21,7 @@ classdef FigureList < handle
         end
         
         function obj = loadList(obj, fName)
-            import tex_export.FigureListEntry
+            import overtikz.FigureListEntry
             figFindExp = ['\\newcommand\{(?:.|[\n\r])*?\\begin' ...
                 '\{\s*figure\s*\}(?:.|[\n\r])*?\\end\{\s*figure\s*\}' ...
                 '(?:.|[\n\r])*?\}'];

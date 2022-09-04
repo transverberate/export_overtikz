@@ -7,7 +7,7 @@ classdef ReplacementRequirementFlags < handle
             obj.requireNegativePhantom = false;
         end
         function res = getTikzRequirements(obj)
-            import tex_export.*
+            import overtikz.*
             
             res = {};
             if obj.requireNegativePhantom
@@ -18,7 +18,7 @@ classdef ReplacementRequirementFlags < handle
     end
     methods(Access = public, Static)
         function obj = fromFlagArray(reqArr)
-            import tex_export.*
+            import overtikz.*
             
             obj = ReplacementRequirementFlags();
             for req=[reqArr{:}]

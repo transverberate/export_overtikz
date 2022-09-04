@@ -1,9 +1,9 @@
-classdef ReplacementPropertyCell < tex_export.ReplacementInterface
+classdef ReplacementPropertyCell < overtikz.ReplacementInterface
     properties
         objectHandle
         objectProperty
         subNodes
-        requirements = tex_export.ReplacementRequirementFlags;
+        requirements = overtikz.ReplacementRequirementFlags;
     end
     methods
         function obj = ReplacementPropertyCell(varargin)
@@ -40,7 +40,7 @@ classdef ReplacementPropertyCell < tex_export.ReplacementInterface
             resStr = labels;
         end
         function requirements = getRequirements(obj)
-            import tex_export.* 
+            import overtikz.* 
             
             requirements = obj.requirements;
             if ~isempty(obj.subNodes)
@@ -53,7 +53,7 @@ classdef ReplacementPropertyCell < tex_export.ReplacementInterface
     end
     methods(Access = public, Static)
         function obj = fromAxisProperty(axisHandle, tickProperty)
-            import tex_export.*
+            import overtikz.*
             
             xmatches = regexp(tickProperty, '[xX]', 'match');
             ymatches = regexp(tickProperty, '[yY]', 'match');
@@ -121,7 +121,7 @@ classdef ReplacementPropertyCell < tex_export.ReplacementInterface
                     y_tix(:,1), y_tix(:,2), y_tix_labels ...
                 );
             else
-                MSGID = ['tex_export::ReplacementPropertyCell::' ...
+                MSGID = ['overtikz::ReplacementPropertyCell::' ...
                     'fromAxisProperty::invalidProperty'];
                 error(MSGID, 'No Axis X/Y Tick Label Property %s.\n', ...
                     tickProperty)
@@ -131,7 +131,7 @@ classdef ReplacementPropertyCell < tex_export.ReplacementInterface
                                 tickProperty, tickLabelNodes);
         end
         function obj = fromGraphPlot(graphHandle, graphProperty)
-            import tex_export.*
+            import overtikz.*
             
             axisHandle = graphHandle.Parent;
             
@@ -216,7 +216,7 @@ classdef ReplacementPropertyCell < tex_export.ReplacementInterface
 end
 
 function coordArr = getXtickPositions(axisHandle)
-    import tex_export.*
+    import overtikz.*
     orientation = axisHandle.XAxisLocation;
     if strcmpi(orientation, 'bottom')
         y_d = min(axisHandle.YLim);
@@ -230,7 +230,7 @@ function coordArr = getXtickPositions(axisHandle)
 end
 
 function coordArr = getYtickPositions(axisHandle)
-    import tex_export.*
+    import overtikz.*
     orientation = axisHandle.YAxisLocation;
     if strcmpi(orientation, 'left')
         x_d = min(axisHandle.XLim);

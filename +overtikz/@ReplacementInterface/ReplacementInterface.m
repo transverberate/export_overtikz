@@ -7,7 +7,7 @@ classdef ReplacementInterface < matlab.mixin.Heterogeneous
     end
     methods (Static, Sealed, Access = protected)
       function defaultObject = getDefaultScalarElement
-         defaultObject = tex_export.ReplacementTextNode([0,0], '');
+         defaultObject = overtikz.ReplacementTextNode([0,0], '');
       end
     end
     methods (Sealed)

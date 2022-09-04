@@ -1,5 +1,5 @@
 function [replacementTextNodes, requirements] = extractLabels(elements)
-    import tex_export.*
+    import overtikz.*
     results = cell(length(elements), 1);
     requirements = ReplacementRequirementFlags();
     i = 1;
@@ -37,7 +37,7 @@ function [replacementTextNodes, requirements] = extractLabels(elements)
 end
 
 function replacementTextNodes = extractLabelsAxes(axisHandle)
-    import tex_export.*
+    import overtikz.*
     
     rplNodeTitle = extractIfNotEmpty(axisHandle.Title, 'normalize', axisHandle);
     rplXLabel = extractIfNotEmpty(axisHandle.XLabel, 'normalize', axisHandle);
@@ -56,7 +56,7 @@ function replacementTextNodes = extractLabelsAxes(axisHandle)
 end
 
 function rplNodes = extractLegendTextNodes(legendHandle)
-    import tex_export.*
+    import overtikz.*
     legendPosition = legendHandle.Position;
     legendTransform = diag([legendPosition(3:4), 1, 1]);
     legendTransform(1:2,4) = legendPosition(1:2).';
@@ -89,7 +89,7 @@ function rplNodes = extractLegendTextNodes(legendHandle)
 end
 
 function replacementTextNodes = extractGraphPlot(graphHandle)
-    import tex_export.*
+    import overtikz.*
     
     rplGraphNodes = ReplacementPropertyCell.fromGraphPlot( ...
         graphHandle, 'nodeLabel');
@@ -103,7 +103,7 @@ function replacementTextNodes = extractGraphPlot(graphHandle)
 end
 
 function rplNode = extractIfNotEmpty(varargin)
-    import tex_export.*
+    import overtikz.*
     p = inputParser;
     p.addRequired('textElement');
     p.addOptional('normalize', []);

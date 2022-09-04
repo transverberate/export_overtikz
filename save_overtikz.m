@@ -1,7 +1,8 @@
 function save_overtikz(baseName)
+% SAVE_OVERTIKZ export current figure for embedding within a TeX Document
     
-    import tex_export.extractLabels tex_export.FigureListEntry;
-    import tex_export.FigureList;
+    import overtikz.extractLabels overtikz.FigureListEntry;
+    import overtikz.FigureList;
     fig = gcf;
     
     % This pause hopefully prevents a race condition between the 

@@ -1,18 +1,18 @@
-classdef ReplacementTextNode < tex_export.ReplacementInterface
+classdef ReplacementTextNode < overtikz.ReplacementInterface
     properties
         scale = 1;
-        nodeContent = tex_export.TexContent('');
-        anchor = tex_export.ReplacementTextNodeAnchor.Base;
+        nodeContent = overtikz.TexContent('');
+        anchor = overtikz.ReplacementTextNodeAnchor.Base;
         alignment = 'center';
         position = [0, 0];
         rotate = 0;
         eHandle = 0;
         origContent = '';
-        requirements = tex_export.ReplacementRequirementFlags();
+        requirements = overtikz.ReplacementRequirementFlags();
     end
     methods
         function obj = ReplacementTextNode(varargin)
-            import tex_export.*
+            import overtikz.*
             p = inputParser;
             p.addRequired('position');
             p.addRequired('content');
@@ -31,7 +31,7 @@ classdef ReplacementTextNode < tex_export.ReplacementInterface
             obj.scale = p.Results.scale;
             obj.rotate = p.Results.rotate;
             obj.eHandle = p.Results.handle;
-            obj.requirements = tex_export.ReplacementRequirementFlags();
+            obj.requirements = overtikz.ReplacementRequirementFlags();
             if ~isempty(p.Results.origContent)
                 obj.origContent = p.Results.origContent;
             else
@@ -77,7 +77,7 @@ classdef ReplacementTextNode < tex_export.ReplacementInterface
     end
     methods(Access = public, Static)
         function obj = fromTextObj(varargin)
-            import tex_export.*
+            import overtikz.*
             
             p = inputParser;
             p.addRequired('textHandle');
@@ -120,7 +120,7 @@ classdef ReplacementTextNode < tex_export.ReplacementInterface
                 'origContent', origContent);
         end
         function obj = fromHandless(varargin)
-            import tex_export.*
+            import overtikz.*
             
             p = inputParser;
             p.addRequired('pos');
@@ -152,7 +152,7 @@ classdef ReplacementTextNode < tex_export.ReplacementInterface
             end
         end
         function obj = fromMinimal(varargin)
-            import tex_export.*
+            import overtikz.*
             
             p = inputParser;
             p.addRequired('pos');

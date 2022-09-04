@@ -70,7 +70,7 @@ classdef TexContent < handle
     end
     methods(Access = public, Static)
         function obj = fromStr(varargin)
-            import tex_export.*
+            import overtikz.*
             
             p = inputParser;
             p.addRequired('inputStr');

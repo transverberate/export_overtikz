@@ -65,7 +65,7 @@ classdef FigureListEntry < handle
     methods(Access = public, Static)
         function obj = fromBaseName(varargin)
             
-            import tex_export.FigureListEntry
+            import overtikz.FigureListEntry
             
             p = inputParser;
             p.addRequired('baseName');
@@ -99,7 +99,7 @@ classdef FigureListEntry < handle
         end
         
         function obj = fromTex(texString)
-            import tex_export.FigureListEntry
+            import overtikz.FigureListEntry
             
             valsStruct = parseTex(texString);
             
