@@ -1,4 +1,4 @@
-# export_tikz
+# export_overtikz
 A `MATLAB` library for exporting low-latency figures for embedding within `LaTeX` documents using `TikZ`.
 
 
@@ -10,7 +10,7 @@ Whereas `matlab2tikz` converts the *entire* figure to `pgf` commands, this tool
 takes a different approach. 
 Rather, the `MATLAB` figure (excluding all text items) is rendered and saved as a `pdf`. 
 Then, a `tex` 'overlay' file is generated with the appropriate TikZ commands to reinsert
-the textual data as text nodes rendered with LaTeX typesetting.
+the textual data as text nodes rendered with `LaTeX` typesetting.
 
 This ensures that the textual information (titles, ticks, labels, annotations, etc.) 
 is rendered consistently with the rest of your document while retaining the exact rendering
