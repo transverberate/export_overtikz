@@ -6,6 +6,15 @@ classdef testExtractLabels < matlab.unittest.TestCase
     
     methods(TestClassSetup)
     end
+
+    methods
+        function drawCircle(testCase)
+            theta = 2*pi*linspace(0, 1, 100);
+            xxs = cos(theta);
+            yys = sin(theta);
+            plot(xxs, yys);
+        end
+    end
     
     methods(TestMethodSetup)
         function updatePackagePath(testCase)
@@ -42,6 +51,35 @@ classdef testExtractLabels < matlab.unittest.TestCase
 
             extractLabels(testCase.TestFigure)
         end
+
+        function pbaspectCorrectAxisPositioning(testCase)
+            import overtikz.extractLabels
+
+            % draw figure
+            figure(testCase.TestFigure)
+            testCase.drawCircle()
+            resize_typeset(3.35, 3.15)
+            tix = [-1, -.5, 0, .5, 1];
+            
+            % modify pbaspect
+            pbaspect([1 1 1])
+            xlabel('$\theta$', 'Interpreter', 'latex')
+            ylabel('$v$','Interpreter', 'latex')
+            set(gca,'TickLabelInterpreter','latex')
+            xticks(tix)
+            yticks(tix)
+            box on;
+
+            t_str={'$-2\pi$', '$-\pi$', '0', '$\pi$', '$2\pi$'};
+            xticklabels(t_str)
+            yticklabels(t_str)
+
+            pause(0.01)
+            save_overtikz('phase')
+            pause(0.01)
+        end
+
+
     end
     
 end
