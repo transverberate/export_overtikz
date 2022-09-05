@@ -5,17 +5,15 @@ classdef testExtractLabels < matlab.unittest.TestCase
     end
     
     methods(TestClassSetup)
-        % Shared setup for the entire test class
+    end
+    
+    methods(TestMethodSetup)
         function updatePackagePath(testCase)
             addpath(fullfile(pwd,'..'));
         end
         function createFigure(testCase)
             testCase.TestFigure = figure;
         end
-    end
-    
-    methods(TestMethodSetup)
-        % Setup for each test
     end
 
     methods(TestMethodTeardown)
