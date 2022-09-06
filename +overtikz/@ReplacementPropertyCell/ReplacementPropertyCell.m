@@ -90,8 +90,8 @@ classdef ReplacementPropertyCell < overtikz.ReplacementInterface
                 
                 % these are usually placed too high move down
                 [M,~] = size(x_tix);
-                orientation = axisHandle.XAxisLocation;
-                if strcmpi(orientation, 'bottom')
+                xOrientation = axisHandle.XAxisLocation;
+                if strcmpi(xOrientation, 'bottom')
                     sgn = -1;
                     anchor = ReplacementTextNodeAnchor.North;
                 else
@@ -113,6 +113,37 @@ classdef ReplacementPropertyCell < overtikz.ReplacementInterface
                     ), ...
                     x_tix(1:N,1), x_tix(1:N,2), x_tix_labels ...
                 );
+
+                % add the exponent multiplier if needed
+                if isprop(axisHandle, 'XAxis') && ...
+                            isprop(axisHandle.XAxis, 'Exponent') && ...
+                            axisHandle.XAxis.Exponent ~= 0
+                    xExponentAmount = axisHandle.XAxis.Exponent;
+                    
+                    xEponentTxt = sprintf('$\\times 10^{%d}$', xExponentAmount);
+                    xRight = max(axisHandle.XLim);
+                    if strcmpi(xOrientation, 'bottom')
+                        yLoc = min(axisHandle.YLim);
+                        sgn = -1;
+                        anchor = ReplacementTextNodeAnchor.NorthEast;
+                    else
+                        yLoc = max(axisHandle.YLim);
+                        sgn = 1;
+                        anchor = ReplacementTextNodeAnchor.SouthEast;
+                    end
+                    xExponentPos = dataToNorm([xRight, yLoc], axisHandle);
+                    % pad space at the bottom
+                    xOffset = 4; 
+                    xExponentPos = xExponentPos + unitToNorm([xOffset, sgn*12], axisHandle, 'points');
+                    xExponentNode = ReplacementTextNode.fromHandless(...
+                        xExponentPos, ...
+                        xEponentTxt, ...
+                        anchor, ...
+                        'scale', 0.8 ...
+                    );
+                    % add node to the list
+                    tickLabelNodes = [tickLabelNodes(:); xExponentNode];
+                end
                 
             elseif ~isempty(ymatches)
                 y_tix_labels = get(axisHandle, tickProperty);
@@ -146,8 +177,8 @@ classdef ReplacementPropertyCell < overtikz.ReplacementInterface
                 end
                 
                 % these are usually placed too rightward move left
-                orientation = axisHandle.YAxisLocation;
-                if strcmpi(orientation, 'left')
+                yOrientation = axisHandle.YAxisLocation;
+                if strcmpi(yOrientation, 'left')
                     sgn = -1;
                     anchor = ReplacementTextNodeAnchor.East;
                 else
@@ -165,6 +196,46 @@ classdef ReplacementPropertyCell < overtikz.ReplacementInterface
                         ), ...
                     y_tix(:,1), y_tix(:,2), y_tix_labels ...
                 );
+
+                % add the exponent multiplier if needed
+                if isprop(axisHandle, 'YAxis') && ...
+                            isprop(axisHandle.YAxis, 'Exponent') && ...
+                            axisHandle.YAxis.Exponent ~= 0
+                    yExponentAmount = axisHandle.YAxis.Exponent;
+                    yEponentTxt = sprintf('$\\times 10^{%d}$', yExponentAmount);
+                    
+                    if strcmpi(yOrientation, 'left')
+                        xLoc = min(axisHandle.XLim);
+                    else
+                        xLoc = max(axisHandle.XLim);
+                    end
+
+                    xOrientation = axisHandle.XAxisLocation;
+                    if strcmpi(xOrientation, 'bottom')
+                        yLoc = max(axisHandle.YLim);
+                        anchor = ReplacementTextNodeAnchor.SouthWest;
+                        sgn = 1;
+                    else
+                        yLoc = min(axisHandle.YLim); 
+                        anchor = ReplacementTextNodeAnchor.NorthWest;
+                        sgn = -1;
+                    end
+
+                    yExponentPos = dataToNorm([xLoc, yLoc], axisHandle);
+                    % remove space left
+                    yExponentPos = yExponentPos + unitToNorm([-4, 0], axisHandle, 'points');
+                    amnt = unitToNorm([0, 0.1], axisHandle, 'centimeters');
+                    yExponentPos = yExponentPos + sgn*amnt;
+                    yExponentNode = ReplacementTextNode.fromHandless(...
+                        yExponentPos, ...
+                        yEponentTxt, ...
+                        anchor, ...
+                        'scale', 0.8 ...
+                    );
+                    % add node to the list
+                    tickLabelNodes = [tickLabelNodes(:); yExponentNode];
+                end
+
             else
                 MSGID = ['overtikz:ReplacementPropertyCell:' ...
                     'fromAxisProperty:invalidProperty'];

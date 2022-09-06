@@ -4,7 +4,8 @@ classdef testExtractLabels < matlab.unittest.TestCase
         TestFigure
     end
     
-    methods(TestClassSetup)
+    methods(TestClassSetup)        
+
     end
     
     methods(TestMethodSetup)
@@ -26,7 +27,7 @@ classdef testExtractLabels < matlab.unittest.TestCase
         % Test methods
         
         function filterTicksToThoseVisible(testCase)
-            import overtikz.extractLabels
+            import overtikz.*
 
             % setup fig
             figure(testCase.TestFigure)
