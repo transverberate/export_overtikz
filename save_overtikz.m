@@ -42,7 +42,7 @@ function save_overtikz(baseName)
     pos = fig.Position;
     figSize = pos(3:4);
     fig.PaperSize = figSize;
-    print(gcf, [baseName 'raw.pdf'], '-r900', '-dpdf');
+    print(gcf, [baseName 'Base.pdf'], '-r900', '-dpdf');
     writeStandAlone(baseName, lbls, req)
     
     % restor old figure
@@ -75,7 +75,7 @@ function writeStandAlone(baseName, labels, requirements)
         end
     end
     fprintf(fid, ['\t\\node[anchor=south west,inner sep=0] (image) ' ...
-        'at (0,0,0) {\\includegraphics{%s}};\n'], [baseName 'raw']);
+        'at (0,0,0) {\\includegraphics{%s}};\n'], [baseName 'Base']);
     fprintf(fid, ['\t\\begin{scope}[x={(image.south east)}' ...
         ',y={(image.north west)}]\n']);
     for lbl=labels
