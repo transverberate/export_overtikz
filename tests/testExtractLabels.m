@@ -43,6 +43,28 @@ classdef testExtractLabels < matlab.unittest.TestCase
 
             extractLabels(testCase.TestFigure)
         end
+
+        function extractAnnotationsR2020(testCase)
+            import overtikz.*
+
+            % setup fig
+            figure(testCase.TestFigure)
+            resize_typeset(3.5,2)
+            t = linspace(0, 1, 501);
+            t = t(1:end-1);
+            x = sin(2*pi*t);
+            plot(t, x);
+            hold on;
+            plot(t, -t);
+            hold off;
+
+            legend( ...
+                {'$\gamma$ Signal 1', '$\beta$ Signal 2'}, ...
+                'Orientation','horizontal', ...
+                'Location','north' ...
+            );
+            
+        end
     end
     
 end

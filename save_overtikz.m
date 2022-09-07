@@ -7,27 +7,40 @@ function save_overtikz(baseName)
     
     % This pause hopefully prevents a race condition between the 
     % extractLabels function and the annotations plane 
-    pause(0.01);
+    pause(0.05);
     
-    % extract labels
-    [lbls, req] = extractLabels(fig);
-    % store ax sizes
+    % store axes sizes and legend props
     annotationAx = findall(fig, 'Tag', 'scribeOverlay');
     axCollection = [fig.Children; annotationAx];
-    N = 0;
+    nAxes = 0;
+    nLegends = 0;
     for ax=axCollection.'
         if isgraphics(ax, 'axes')
-            N = N + 1;
+            nAxes = nAxes + 1;
+        elseif isgraphics(ax, 'legend')
+            nLegends = nLegends + 1;
         end
     end
-    oldSizes = cell(N,2);
-    i = 1;
+    oldSizes = cell(nAxes, 2);
+    oldLegendItrp = cell(nLegends, 2);
+    iAxes = 1;
+    iLegends = 1;
     for ax=axCollection.'
         if isgraphics(ax, 'axes')
-            oldSizes(i,:) = {ax, ax.Position};
+            oldSizes(iAxes,:) = {ax, ax.Position};
+            iAxes = iAxes + 1;
+        elseif isgraphics(ax, 'legend')
+            oldLegendItrp(iLegends,:) = {ax, ax.Interpreter};
+            ax.Interpreter = 'latex';
+            iLegends = iLegends + 1;
         end
-        i = i + 1;
+        
     end
+
+    % extract labels
+    [lbls, req] = extractLabels(fig);
+
+    % -- Clear Figure --
     if ~isempty(lbls)
         clearNodes(lbls)
     end
@@ -45,11 +58,20 @@ function save_overtikz(baseName)
     print(gcf, [baseName 'Base.pdf'], '-r900', '-dpdf');
     writeStandAlone(baseName, lbls, req)
     
-    % restor old figure
+    % -- Restore Figure --
+    % Restore Nodes
     if ~isempty(lbls)
         restoreNodes(lbls)
     end
-    % manage figure entries
+    % Restore Legend Interpretors
+    for pair=oldLegendItrp.'
+        ax = pair{1};
+        intrp = pair{2};
+        ax.Interpreter = intrp;
+        pause(0.01);
+    end
+
+    % -- Manage Figure Entries --
     figEntry = FigureListEntry.fromBaseName(baseName, ...
         'includeArgs', 'mode=tex');
     fList = FigureList();

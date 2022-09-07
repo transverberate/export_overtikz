@@ -3,6 +3,7 @@ classdef ReplacementPropertyCell < overtikz.ReplacementInterface
         objectHandle
         objectProperty
         subNodes
+        customBlanks
         requirements = overtikz.ReplacementRequirementFlags;
     end
     methods
@@ -11,11 +12,13 @@ classdef ReplacementPropertyCell < overtikz.ReplacementInterface
             p.addRequired('objectHandle')
             p.addRequired('objectProperty')
             p.addRequired('subNodes')
+            p.addParameter('customBlanks', []);
             p.parse(varargin{:});
             
             obj.objectHandle = p.Results.objectHandle;
             obj.objectProperty = p.Results.objectProperty;
             obj.subNodes = p.Results.subNodes;
+            obj.customBlanks = p.Results.customBlanks;
         end
         function strRes = toTikzNode(obj)
             childStrRes = arrayfun(...
@@ -27,9 +30,13 @@ classdef ReplacementPropertyCell < overtikz.ReplacementInterface
         end
         function clearNode(obj)
             xtix = get(obj.objectHandle, obj.objectProperty);
-            emptyObj = arrayfun(@(x) blanks(0),...
-                1:length(xtix), ...
-                'UniformOutput', false);
+            if ~isempty(obj.customBlanks)
+                emptyObj = obj.customBlanks;
+            else
+                emptyObj = arrayfun(@(x) blanks(0),...
+                    1:length(xtix), ...
+                    'UniformOutput', false);
+            end
             set(obj.objectHandle, ...
                 obj.objectProperty, emptyObj);
         end
