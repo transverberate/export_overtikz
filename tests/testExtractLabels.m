@@ -49,7 +49,6 @@ classdef testExtractLabels < matlab.unittest.TestCase
 
             % setup fig
             figure(testCase.TestFigure)
-            resize_typeset(3.5,2)
             t = linspace(0, 1, 501);
             t = t(1:end-1);
             x = sin(2*pi*t);
@@ -63,8 +62,8 @@ classdef testExtractLabels < matlab.unittest.TestCase
                 'Orientation','horizontal', ...
                 'Location','north' ...
             );
-            
         end
     end
     
 end
+

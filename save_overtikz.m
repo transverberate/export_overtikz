@@ -4,11 +4,19 @@ function save_overtikz(baseName)
     import overtikz.extractLabels overtikz.FigureListEntry;
     import overtikz.FigureList;
     fig = gcf;
+
+    % Prepare the figure settings for proper export
+    fig.Renderer = 'Painters';  % Forces Vector Rendering
+    fig.Units = fig.PaperUnits;  % critical for proper sizing
+    fig.PaperPositionMode = 'auto';
     
     % This pause hopefully prevents a race condition between the 
     % extractLabels function and the annotations plane 
     pause(0.05);
-    
+    drawnow();
+    refresh();
+    pause(0.05);
+
     % store axes sizes and legend props
     annotationAx = findall(fig, 'Tag', 'scribeOverlay');
     axCollection = [fig.Children; annotationAx];
@@ -113,3 +121,4 @@ function writeStandAlone(baseName, labels, requirements)
     fprintf(fid, '\\end{document}\n');
     fclose(fid);
 end
+
