@@ -43,8 +43,8 @@ function replacementTextNodes = extractLabelsAxes(axisHandle)
     rplXLabel = extractIfNotEmpty(axisHandle.XLabel, 'normalize', axisHandle);
     rplYLabel = extractIfNotEmpty(axisHandle.YLabel, 'normalize', axisHandle);
     
-    rplXTix = ReplacementPropertyCell.fromAxisProperty(axisHandle, 'XTickLabels');
-    rplYTix = ReplacementPropertyCell.fromAxisProperty(axisHandle, 'YTickLabels');
+    rplXTix = ReplacementPropertyAxis(axisHandle, 'XTickLabels');
+    rplYTix = ReplacementPropertyAxis(axisHandle, 'YTickLabels');
     
     replacementTextNodes = [
         rplNodeTitle 
@@ -85,7 +85,7 @@ function rplNodes = extractLegendTextNodes(legendHandle)
             textHandle ...
         );
     end
-%     
+  
     if isprop(legendHandle, 'String')
         blankEntries = cellfun(...
             @(x) ['\phantom{', x, '}'], ...
@@ -94,7 +94,7 @@ function rplNodes = extractLegendTextNodes(legendHandle)
         );
         rplCell = ReplacementPropertyCell( ...
             legendHandle, 'String', [rplNodes{:}], ...
-            'customBlanks', blankEntries ...
+            'customClearBlanks', blankEntries ...
         );
         rplNodes = rplCell;
     else
