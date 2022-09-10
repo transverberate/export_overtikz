@@ -74,7 +74,7 @@ classdef testExtractLabels < matlab.unittest.TestCase
         end
 
         function pbaspectCorrectAxisPositioning(testCase)
-            import overtikz.extractLabels
+            import overtikz.*
 
             % draw figure
             figure(testCase.TestFigure)
@@ -95,9 +95,6 @@ classdef testExtractLabels < matlab.unittest.TestCase
             xticklabels(t_str)
             yticklabels(t_str)
 
-            pause(0.01)
-            save_overtikz('phase')
-            pause(0.01)
         end
 
     end

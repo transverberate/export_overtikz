@@ -34,35 +34,27 @@ function resPos = dataToNorm(varargin)
     
     if strcmp(axesHandle.PlotBoxAspectRatioMode, 'manual')
         
-%         fig = gcf;
-%         figOldUnits = fig.Units;
-%         fig.Units = 'pixels';
-%         w_f = fig.Position(3);
-%         h_f = fig.Position(4);
-%         fig.Units = figOldUnits;
-        
         x_old = x_a;
         y_old = y_a;
         w_old = w_a;
         h_old = h_a;
+        r_old = h_a / w_a;
         
         pboxx = axesHandle.PlotBoxAspectRatio;
         w_r = pboxx(1);
         h_r = pboxx(2);
-        r_r = w_r/h_r;
-        h_target = w_old / r_r;
-        r_new = w_old / h_target;
-        if r_new >= 1
+        r_new = h_r / w_r;
+
+        if r_new <= r_old
             w_new = w_old;
-            h_new = w_old / r_new;
-            x_new = x_old;
-            y_new = (h_old-h_new)/2 + y_old;
+            h_new = w_old * r_new * r_old;
         else
-            w_new = h_old * r_new;
+            w_new = h_old / r_new / r_old;
             h_new = h_old;
-            x_new = (w_old-w_new)/2 + x_old;
-            y_new = y_old;
         end
+
+        x_new = (w_old-w_new)/2 + x_old;
+        y_new = (h_old-h_new)/2 + y_old;
         
         x_a = x_new;
         y_a = y_new;
@@ -74,6 +66,6 @@ function resPos = dataToNorm(varargin)
     y_n = (y_d-y_dlim(1))*h_a/h_d + y_a;
     
     axesHandle.Units = oldUnits;
-    
     resPos = [x_n, y_n];
 end
+
