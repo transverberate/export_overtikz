@@ -38,7 +38,11 @@ classdef FigureListEntry < handle
                 escapeStr(figEntry.includeArgs) '{' ...
                 escapeStr(figEntry.includeFile) '}'];
             centeringFootStr = '}';
-            captionStr = ['\\caption{' escapeStr(figEntry.figCaption) '}'];   
+            captionStr = [...
+                '\t\t\\caption{\n' ...
+                makeOptionalCommand(figEntry.figCaption, 3) ...
+                '\t\t}\n' ...
+            ];   
             labelStr = ['\\label{' escapeStr(figEntry.figLabel) '}'];    
             figureFootStr = '\\end{figure} ';
             commandFootStr = '}';
@@ -49,7 +53,7 @@ classdef FigureListEntry < handle
                 '\t\t' centeringHeadStr '\n' ...
                 '\t\t\t' includeStr '\n' ...
                 '\t\t' centeringFootStr '\n' ...
-            	'\t\t' captionStr '\n' ...
+            	captionStr ...
             	'\t\t' labelStr '\n' ...
             	'\t' figureFootStr '\n' ...
             	commandFootStr ...
@@ -160,7 +164,12 @@ function valsStruct = parseTex(texString)
     
     tokens = regexp(texString, captionExpr, 'names');
     if ~isempty(tokens.caption)
-        valsStruct.figCaption = tokens.caption;
+        captionCand = tokens.caption;
+        valsStruct.figCaption = captionCand;
+        match = parseOptionalCommand(captionCand);
+        if ~isempty(match)
+            valsStruct.figCaption = match;
+        end
     end
     
     tokens = regexp(texString, labelExpr, 'names');
@@ -207,3 +216,37 @@ end
 function outStr = escapeStr(inStr)
     outStr = strrep(strrep(inStr, '\', '\\'), '%', '%%');
 end
+
+function result = parseOptionalCommand(inStr)
+    optionalCommandExp = ['\\ifdefined\s*\\[\w]*\s*(?<command>[\w\\]*?)'...
+        '(?<!\\)\s*\\else(?:.|[\n\r])*?\\fi'];
+    tokens = regexp(inStr, optionalCommandExp, 'names', 'once');
+    if ~isempty(tokens) && ~isempty(tokens.command)
+        result = tokens.command;
+        return
+    end
+    result = [];
+end
+
+function result = makeOptionalCommand(inStr, indentAmnt)
+    if nargin < 2
+        indentAmnt = 0;
+    end
+    csNameExp = '\s*\\*(?<csname>.*)';
+    csName = inStr;
+    tokens = regexp(inStr, csNameExp, 'names', 'once');
+    if ~isempty(tokens.csname)
+        csName = tokens.csname;
+    end
+
+    indentStr = repmat('\t', [1, indentAmnt]);
+
+    result = [...
+      indentStr, '\\ifdefined\\', csName, '\n', ...  
+      indentStr, '\t\\', csName, '\n', ...
+      indentStr, '\\else\n', ...
+      indentStr, '\t\\textbackslash ', csName, '\n', ...
+      indentStr, '\\fi\n' ...
+    ];
+end
+

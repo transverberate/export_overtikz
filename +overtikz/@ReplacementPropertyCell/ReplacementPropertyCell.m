@@ -3,6 +3,7 @@ classdef ReplacementPropertyCell < overtikz.ReplacementInterface
         objectHandle
         objectProperty
         subNodes
+        customClearBlanks
         requirements = overtikz.ReplacementRequirementFlags;
     end
     methods
@@ -11,11 +12,13 @@ classdef ReplacementPropertyCell < overtikz.ReplacementInterface
             p.addRequired('objectHandle')
             p.addRequired('objectProperty')
             p.addRequired('subNodes')
+            p.addParameter('customClearBlanks', []);
             p.parse(varargin{:});
             
             obj.objectHandle = p.Results.objectHandle;
             obj.objectProperty = p.Results.objectProperty;
             obj.subNodes = p.Results.subNodes;
+            obj.customClearBlanks = p.Results.customClearBlanks;
         end
         function strRes = toTikzNode(obj)
             childStrRes = arrayfun(...
@@ -26,10 +29,14 @@ classdef ReplacementPropertyCell < overtikz.ReplacementInterface
             strRes = childStrRes;
         end
         function clearNode(obj)
-            xtix = get(obj.objectHandle, obj.objectProperty);
-            emptyObj = arrayfun(@(x) blanks(0),...
-                1:length(xtix), ...
-                'UniformOutput', false);
+            objectPrevValue = get(obj.objectHandle, obj.objectProperty);
+            if ~isempty(obj.customClearBlanks)
+                emptyObj = obj.customClearBlanks;
+            else
+                emptyObj = arrayfun(@(x) blanks(0),...
+                    1:length(objectPrevValue), ...
+                    'UniformOutput', false);
+            end
             set(obj.objectHandle, ...
                 obj.objectProperty, emptyObj);
         end
@@ -52,129 +59,6 @@ classdef ReplacementPropertyCell < overtikz.ReplacementInterface
         end
     end
     methods(Access = public, Static)
-        function obj = fromAxisProperty(axisHandle, tickProperty)
-            import overtikz.*
-            
-            xmatches = regexp(tickProperty, '[xX]', 'match');
-            ymatches = regexp(tickProperty, '[yY]', 'match');
-            if ~isempty(xmatches)
-                x_tix_labels = get(axisHandle, tickProperty);
-                x_tix = getXtickPositions(axisHandle);
-                dim = axisHandle.Position;
-                xxlim = cumsum([dim(1), dim(3)]);
-                x_tix = sort(x_tix( ....
-                    x_tix(:, 1) >= xxlim(1) & ...
-                    x_tix(:, 1) <= xxlim(2),  ...
-                    : ...
-                ));
-                [M,~] = size(x_tix);
-                if M ~= numel(x_tix_labels)
-                    error( ...
-                        [...
-                        'overtikz:ReplacementPropertyCell:' ...
-                        'fromAxisProperty:xTickLabelMismatch'...
-                        ], ...
-                        [ ...
-                            'Number of xTicks: %d, not equal to ' ...
-                            'number of xTickLabels: %d.' ...
-                        ], ...
-                        M, ...
-                        numel(x_tix_labels) ...
-                    )
-                end
-                
-                if isempty(x_tix)
-                    obj = [];
-                    return
-                end
-                
-                % these are usually placed too high move down
-                [M,~] = size(x_tix);
-                orientation = axisHandle.XAxisLocation;
-                if strcmpi(orientation, 'bottom')
-                    sgn = -1;
-                    anchor = ReplacementTextNodeAnchor.North;
-                else
-                    sgn = 1;
-                    anchor = ReplacementTextNodeAnchor.South;
-                end
-                amnt = unitToNorm([0, 0.1], axisHandle, 'centimeters');
-                x_tix(:, 2) = x_tix(:, 2) + sgn*amnt(2)*ones(M, 1);
-                
-                
-                N = numel(x_tix_labels);
-                
-                tickLabelNodes = arrayfun( ...
-                    @(x,y,txt) ReplacementTextNode.fromHandless(...
-                        [x, y], txt{:}, ...
-                        anchor, ...
-                        'scale', 0.8, ...
-                        'horizontalCorrection', true ...
-                    ), ...
-                    x_tix(1:N,1), x_tix(1:N,2), x_tix_labels ...
-                );
-                
-            elseif ~isempty(ymatches)
-                y_tix_labels = get(axisHandle, tickProperty);
-                y_tix = getYtickPositions(axisHandle);
-                dim = axisHandle.Position;
-                yylim = cumsum([dim(2), dim(4)]);
-                y_tix = sort(y_tix( ....
-                    y_tix(:, 2) >= yylim(1) & ...
-                    y_tix(:, 2) <= yylim(2),  ...
-                    : ...
-                ));
-                [M,~] = size(y_tix);
-                if M ~= numel(y_tix_labels)
-                    error( ...
-                        [...
-                        'overtikz:ReplacementPropertyCell:' ...
-                        'fromAxisProperty:yTickLabelMismatch'...
-                        ], ...
-                        [ ...
-                            'Number of yTicks: %d, not equal to ' ...
-                            'number of yTickLabels: %d.' ...
-                        ], ...
-                        M, ...
-                        numel(y_tix_labels) ...
-                    )
-                end
-                
-                if isempty(y_tix)
-                    obj = [];
-                    return
-                end
-                
-                % these are usually placed too rightward move left
-                orientation = axisHandle.YAxisLocation;
-                if strcmpi(orientation, 'left')
-                    sgn = -1;
-                    anchor = ReplacementTextNodeAnchor.East;
-                else
-                    sgn = 1;
-                    anchor = ReplacementTextNodeAnchor.West;
-                end
-                amnt = unitToNorm([0.05, 0], axisHandle, 'centimeters');
-                y_tix(:, 1) = y_tix(:, 1) + sgn*amnt(1)*ones(M, 1);
-                
-                tickLabelNodes = arrayfun( ...
-                    @(x,y,txt) ReplacementTextNode.fromHandless(...
-                        [x, y], txt{:}, ...
-                        anchor, ...
-                        'scale', 0.8 ...
-                        ), ...
-                    y_tix(:,1), y_tix(:,2), y_tix_labels ...
-                );
-            else
-                MSGID = ['overtikz:ReplacementPropertyCell:' ...
-                    'fromAxisProperty:invalidProperty'];
-                error(MSGID, 'No Axis X/Y Tick Label Property %s.\n', ...
-                    tickProperty)
-            end
-            
-            obj = ReplacementPropertyCell(axisHandle, ...
-                                tickProperty, tickLabelNodes);
-        end
         function obj = fromGraphPlot(graphHandle, graphProperty)
             import overtikz.*
             
@@ -260,47 +144,6 @@ classdef ReplacementPropertyCell < overtikz.ReplacementInterface
     end
 end
 
-function coordArr = getXtickPositions(axisHandle)
-    import overtikz.*
-    orientation = axisHandle.XAxisLocation;
-    if strcmpi(orientation, 'bottom')
-        y_d = min(axisHandle.YLim);
-    else
-        y_d = max(axisHandle.YLim);
-    end
-    x_tix = axisHandle.XTick;
-    C = arrayfun(@(x_d) dataToNorm([x_d, y_d], axisHandle), ...
-        x_tix.', 'UniformOutput', false);
-    coordArr = cell2mat(C);
-end
-
-function coordArr = getYtickPositions(axisHandle)
-    import overtikz.*
-    orientation = axisHandle.YAxisLocation;
-    if strcmpi(orientation, 'left')
-        x_d = min(axisHandle.XLim);
-    else
-        x_d = max(axisHandle.XLim);
-    end
-    y_tix = axisHandle.YTick;
-    C = arrayfun(@(y_d) dataToNorm([x_d, y_d], axisHandle), ...
-        y_tix.', 'UniformOutput', false);
-    coordArr = cell2mat(C);
-end
-
-function resPos = unitToNorm(pos, axisHandle, unitName)
-    oldUnits = axisHandle.Units;
-    axisHandle.Units = unitName;
-    inUnits = axisHandle.Position(1:2);
-    axisHandle.Units = 'normalized';
-    normUnits = axisHandle.Position(1:2);
-    axisHandle.Units = oldUnits;
-    
-    coeff = normUnits./inUnits;
-    resPos = pos.*coeff;
-end
-
-
 function [midpoint, dVect] = midAlongPath(u)
     [M, ~] = size(u);
     du = diff(u);
@@ -317,3 +160,4 @@ function [midpoint, dVect] = midAlongPath(u)
     
     dVect = [x2-x1; y2-y1];
 end
+

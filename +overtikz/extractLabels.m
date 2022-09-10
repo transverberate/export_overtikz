@@ -43,8 +43,8 @@ function replacementTextNodes = extractLabelsAxes(axisHandle)
     rplXLabel = extractIfNotEmpty(axisHandle.XLabel, 'normalize', axisHandle);
     rplYLabel = extractIfNotEmpty(axisHandle.YLabel, 'normalize', axisHandle);
     
-    rplXTix = ReplacementPropertyCell.fromAxisProperty(axisHandle, 'XTickLabels');
-    rplYTix = ReplacementPropertyCell.fromAxisProperty(axisHandle, 'YTickLabels');
+    rplXTix = ReplacementPropertyAxis(axisHandle, 'XTickLabels');
+    rplYTix = ReplacementPropertyAxis(axisHandle, 'YTickLabels');
     
     replacementTextNodes = [
         rplNodeTitle 
@@ -85,7 +85,21 @@ function rplNodes = extractLegendTextNodes(legendHandle)
             textHandle ...
         );
     end
-    rplNodes = [rplNodes{:}];
+  
+    if isprop(legendHandle, 'String')
+        blankEntries = cellfun(...
+            @(x) ['\phantom{', x, '}'], ...
+            legendHandle.String, ...
+            'UniformOutput', false ...
+        );
+        rplCell = ReplacementPropertyCell( ...
+            legendHandle, 'String', [rplNodes{:}], ...
+            'customClearBlanks', blankEntries ...
+        );
+        rplNodes = rplCell;
+    else
+        rplNodes = [rplNodes{:}];
+    end
 end
 
 function replacementTextNodes = extractGraphPlot(graphHandle)

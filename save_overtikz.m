@@ -4,30 +4,51 @@ function save_overtikz(baseName)
     import overtikz.extractLabels overtikz.FigureListEntry;
     import overtikz.FigureList;
     fig = gcf;
+
+    % Prepare the figure settings for proper export
+    fig.Renderer = 'Painters';  % Forces Vector Rendering
+    fig.Units = fig.PaperUnits;  % critical for proper sizing
+    fig.PaperPositionMode = 'auto';
     
     % This pause hopefully prevents a race condition between the 
     % extractLabels function and the annotations plane 
-    pause(0.01);
-    
-    % extract labels
-    [lbls, req] = extractLabels(fig);
-    % store ax sizes
+    pause(0.05);
+    drawnow();
+    refresh();
+    pause(0.05);
+
+    % store axes sizes and legend props
     annotationAx = findall(fig, 'Tag', 'scribeOverlay');
     axCollection = [fig.Children; annotationAx];
-    N = 0;
+    nAxes = 0;
+    nLegends = 0;
     for ax=axCollection.'
         if isgraphics(ax, 'axes')
-            N = N + 1;
+            nAxes = nAxes + 1;
+        elseif isgraphics(ax, 'legend')
+            nLegends = nLegends + 1;
         end
     end
-    oldSizes = cell(N,2);
-    i = 1;
+    oldSizes = cell(nAxes, 2);
+    oldLegendItrp = cell(nLegends, 2);
+    iAxes = 1;
+    iLegends = 1;
     for ax=axCollection.'
         if isgraphics(ax, 'axes')
-            oldSizes(i,:) = {ax, ax.Position};
+            oldSizes(iAxes,:) = {ax, ax.Position};
+            iAxes = iAxes + 1;
+        elseif isgraphics(ax, 'legend')
+            oldLegendItrp(iLegends,:) = {ax, ax.Interpreter};
+            ax.Interpreter = 'latex';
+            iLegends = iLegends + 1;
         end
-        i = i + 1;
+        
     end
+
+    % extract labels
+    [lbls, req] = extractLabels(fig);
+
+    % -- Clear Figure --
     if ~isempty(lbls)
         clearNodes(lbls)
     end
@@ -42,14 +63,23 @@ function save_overtikz(baseName)
     pos = fig.Position;
     figSize = pos(3:4);
     fig.PaperSize = figSize;
-    print(gcf, [baseName 'raw.pdf'], '-r900', '-dpdf');
+    print(gcf, [baseName 'Base.pdf'], '-r900', '-dpdf');
     writeStandAlone(baseName, lbls, req)
     
-    % restor old figure
+    % -- Restore Figure --
+    % Restore Nodes
     if ~isempty(lbls)
         restoreNodes(lbls)
     end
-    % manage figure entries
+    % Restore Legend Interpretors
+    for pair=oldLegendItrp.'
+        ax = pair{1};
+        intrp = pair{2};
+        ax.Interpreter = intrp;
+        pause(0.01);
+    end
+
+    % -- Manage Figure Entries --
     figEntry = FigureListEntry.fromBaseName(baseName, ...
         'includeArgs', 'mode=tex');
     fList = FigureList();
@@ -75,7 +105,7 @@ function writeStandAlone(baseName, labels, requirements)
         end
     end
     fprintf(fid, ['\t\\node[anchor=south west,inner sep=0] (image) ' ...
-        'at (0,0,0) {\\includegraphics{%s}};\n'], [baseName 'raw']);
+        'at (0,0,0) {\\includegraphics{%s}};\n'], [baseName 'Base']);
     fprintf(fid, ['\t\\begin{scope}[x={(image.south east)}' ...
         ',y={(image.north west)}]\n']);
     for lbl=labels
@@ -91,3 +121,4 @@ function writeStandAlone(baseName, labels, requirements)
     fprintf(fid, '\\end{document}\n');
     fclose(fid);
 end
+
