@@ -1,1 +1,2 @@
-1. Fix unit normalization/mapping when pbaspect is set manually
+1. save_overtikz reverses the order of the legends
+2. create latex mixin which allows for undefined macros
