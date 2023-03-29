@@ -1,3 +1,0 @@
-1. save_overtikz reverses the order of the legends
-2. create latex mixin which allows for undefined macros
-3. Add ordering to final text overlay commands such that the resulting rendered text is selectable in traditional (western) reading-order: left-to-right, then up-to-down
