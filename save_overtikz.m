@@ -1,9 +1,29 @@
-function save_overtikz(baseName)
+function save_overtikz(baseName, options)
 % SAVE_OVERTIKZ export current figure for embedding within a TeX Document
-    
+    arguments
+        baseName (1,:) char 
+        options.texFigureDirectory (1,:) char = ''
+    end    
+
     import overtikz.extractLabels overtikz.FigureListEntry;
     import overtikz.FigureList;
     fig = gcf;
+    texFigureDirectory = options.texFigureDirectory;
+    if ~isempty(texFigureDirectory)
+        % This introduces a dependency on Java
+        if ~java.io.File(texFigureDirectory).isAbsolute()
+            texFigureDirectoryFull = fullfile(pwd, texFigureDirectory);
+        end
+        % using 'exist' *requires* an absolute path, otherwise results are
+        % not as expected (e.g., 'figures' exists in MATLAB directory but
+        % not in the current directory)
+        if ~exist(texFigureDirectoryFull, 'dir') 
+            mkdir(texFigureDirectoryFull); 
+        end
+        basePath = fullfile(texFigureDirectoryFull, baseName);
+    else
+        basePath = baseName;
+    end
 
     % Prepare the figure settings for proper export
     fig.Renderer = 'Painters';  % Forces Vector Rendering
@@ -63,8 +83,8 @@ function save_overtikz(baseName)
     pos = fig.Position;
     figSize = pos(3:4);
     fig.PaperSize = figSize;
-    print(gcf, [baseName 'Base.pdf'], '-r900', '-dpdf');
-    writeStandAlone(baseName, lbls, req)
+    print(fig, [basePath, 'Base.pdf'], '-r900', '-dpdf');
+    writeStandAlone(baseName, texFigureDirectoryFull, lbls, req)
     
     % -- Restore Figure --
     % Restore Nodes
@@ -81,14 +101,20 @@ function save_overtikz(baseName)
 
     % -- Manage Figure Entries --
     figEntry = FigureListEntry.fromBaseName(baseName, ...
-        'includeArgs', 'mode=tex');
+        includeDirectory=texFigureDirectory, ...
+        includeArgs='mode=tex');
     fList = FigureList();
     fList.addEntry(figEntry);
     fList.saveList();
 end
 
-function writeStandAlone(baseName, labels, requirements)
-    fid = fopen([baseName '.tex'], 'w');
+function writeStandAlone(baseName, texFigureDirectory, labels, requirements)
+    if ~isempty(texFigureDirectory)
+        basePath = fullfile(texFigureDirectory, baseName);
+    else
+        basePath = baseName;
+    end
+    fid = fopen([basePath '.tex'], 'w');
     fprintf(fid, '%%Generated\n');
     fprintf(fid, '\\documentclass[tikz]{standalone}\n');
     fprintf(fid, '\\usepackage{currfile}\n');

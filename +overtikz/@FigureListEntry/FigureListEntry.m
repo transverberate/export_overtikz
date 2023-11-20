@@ -1,6 +1,7 @@
 classdef FigureListEntry < handle
     properties
         includeFile
+        includeDirectory
         commandName
         includeCmd
         includeArgs
@@ -11,6 +12,7 @@ classdef FigureListEntry < handle
     methods(Access = public)
         function obj = FigureListEntry( ...
             includeFile, ...
+            includeDirectory, ...
             commandName, ...
             includeCmd, ...
             includeArgs, ...
@@ -19,6 +21,7 @@ classdef FigureListEntry < handle
             figLabel ...
         )
             obj.includeFile = includeFile;
+            obj.includeDirectory = includeDirectory;
             obj.commandName = commandName;
             obj.includeCmd = includeCmd;
             obj.includeArgs = includeArgs;
@@ -34,9 +37,16 @@ classdef FigureListEntry < handle
             figureHeadStr = ['\\begin{figure}' ...
                 escapeStr(figEntry.figFloat)];
             centeringHeadStr = '\\centering{';
+            
+            if ~isempty(figEntry.includeDirectory)
+                includePath = [figEntry.includeDirectory, '/', figEntry.includeFile];
+            else
+                includePath = figEntry.includeFile;
+            end
             includeStr = ['\\' escapeStr(figEntry.includeCmd) ...
                 escapeStr(figEntry.includeArgs) '{' ...
-                escapeStr(figEntry.includeFile) '}'];
+                escapeStr(includePath) '}'];
+            
             centeringFootStr = '}';
             captionStr = [...
                 '\t\t\\caption{%%\n' ...
@@ -60,32 +70,33 @@ classdef FigureListEntry < handle
             ];
         end
         function tf = eq(obj1, obj2)
-            tf = isprop(obj2, 'includeFile');
+            tf = all([isprop(obj2, 'includeFile'), isprop(obj2, 'includeDirectory')]);
             if tf==true
-                tf = strcmp(obj1.includeFile, obj2.includeFile);
+                tf = all([ ...
+                    strcmp(obj1.includeFile(:), obj2.includeFile(:)), ...
+                    strcmp(obj1.includeDirectory(:), obj2.includeDirectory(:)) ...
+                ]);
             end
         end
     end
     methods(Access = public, Static)
-        function obj = fromBaseName(varargin)
+        function obj = fromBaseName(baseName, options)
+            arguments
+                baseName (1,:) char 
+                options.includeDirectory (1,:) char = ''
+                options.includeArgs (1,:) char = 'mode=buildmissing'
+            end
             
             import overtikz.FigureListEntry
             
-            p = inputParser;
-            p.addRequired('baseName');
-            p.addOptional('includeArgs', 'mode=buildmissing');
-            p.parse(varargin{:});
-            
-            baseName = p.Results.baseName;
-            includeArgs = p.Results.includeArgs;
-            
             includeFile = baseName;
+            includeDirectory = options.includeDirectory;
 
             commandName = santizeCmdName( ...
                 ['fig' sm_capitalize(baseName)]);
 
             includeCmd = 'includestandalone';
-            includeArgsStr = ['[' includeArgs ']'];
+            includeArgsStr = ['[' options.includeArgs ']'];
             figFloat = '[H]';
             figCaption = santizeCmdName( ...
                 ['\cpt' sm_capitalize(baseName)]);
@@ -93,6 +104,7 @@ classdef FigureListEntry < handle
 
             obj = FigureListEntry( ...
                 includeFile, ...
+                includeDirectory, ...
                 commandName, ...
                 includeCmd, ...
                 includeArgsStr, ...
@@ -109,6 +121,7 @@ classdef FigureListEntry < handle
             
             obj = FigureListEntry( ...
                 valsStruct.includeFile, ...
+                valsStruct.includeDirectory, ...
                 valsStruct.commandName, ...
                 valsStruct.includeCmd, ...
                 valsStruct.includeArgs, ...
@@ -124,6 +137,7 @@ function valsStruct = parseTex(texString)
     
     valsStruct = struct( ...
         'includeFile', '', ...
+        'includeDirectory', '', ...
         'commandName', '', ...
         'includeCmd', 'includestandalone', ...
         'includeArgs', '[mode=buildmissing]', ...
@@ -138,7 +152,7 @@ function valsStruct = parseTex(texString)
         '\\centering\s*\{\s*(%.*?\n)?\s*\\(?<includeCmd>[A-Za-z]*' ...
         '(?:include|input)[A-Za-z]*)' ...
         '(?<includeArgs>\[[A-z=~*+-\/,;:\.\?\\\s\d]+\])?'...
-        '\{(?<includeFile>[\sA-z\._\d\\\/]+)\}\s*(%.*?\n)?\s*\}'...
+        '\{(?<includePath>[\sA-z\._\d\\\/]+)\}\s*(%.*?\n)?\s*\}'...
     ];
     captionExpr = '\\caption\s*\{\s*(%.*?\n)?\s*(?<caption>(?:.|[\n\r])*?)(?<!\\)\}';
     labelExpr = '\\label\s*\{(?<label>(?:.|[\n\r])*?)(?<!\\)\}';
@@ -160,8 +174,10 @@ function valsStruct = parseTex(texString)
     if ~isempty(tokens.includeArgs)
         valsStruct.includeArgs = tokens.includeArgs;
     end
-    if ~isempty(tokens.includeFile)
-        valsStruct.includeFile = tokens.includeFile;
+    if ~isempty(tokens.includePath)
+        pathTokens = strsplit(tokens.includePath, '/');
+        valsStruct.includeFile = pathTokens{end};
+        valsStruct.includeDirectory = strjoin(pathTokens(1:end-1), '/');
     end
     
     tokens = regexp(texString, captionExpr, 'names');
