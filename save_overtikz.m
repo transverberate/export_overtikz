@@ -23,6 +23,7 @@ function save_overtikz(baseName, options)
         basePath = fullfile(texFigureDirectoryFull, baseName);
     else
         basePath = baseName;
+        texFigureDirectoryFull = '';
     end
 
     % Prepare the figure settings for proper export
