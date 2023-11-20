@@ -91,6 +91,7 @@ function writeStandAlone(baseName, labels, requirements)
     fid = fopen([baseName '.tex'], 'w');
     fprintf(fid, '%%Generated\n');
     fprintf(fid, '\\documentclass[tikz]{standalone}\n');
+    fprintf(fid, '\\usepackage{currfile}\n');
     fprintf(fid, '\\usepackage{pgfplots}\n');
     fprintf(fid, '\\usepackage{graphicx}\n');
     fprintf(fid, '\\begin{document}\n');
@@ -105,7 +106,8 @@ function writeStandAlone(baseName, labels, requirements)
         end
     end
     fprintf(fid, ['\t\\node[anchor=south west,inner sep=0] (image) ' ...
-        'at (0,0,0) {\\includegraphics{%s}};\n'], [baseName 'Base']);
+        'at (0,0,0) {\\includegraphics{\\currfiledir %s}};\n'], ...
+        [baseName 'Base']);
     fprintf(fid, ['\t\\begin{scope}[x={(image.south east)}' ...
         ',y={(image.north west)}]\n']);
     for lbl=labels
