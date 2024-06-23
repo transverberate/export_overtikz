@@ -31,7 +31,12 @@ classdef ReplacementTextNodeAnchor < uint32
         end
     end
     methods(Access = public, Static)
-        function obj = fromTextProp(hStr, vStr)
+        function obj = fromTextProp(hStr, vStr, doInvert)
+            arguments
+                hStr char
+                vStr char
+                doInvert logical = false
+            end
             import overtikz.*
             vertIdx = containers.Map({ ...
                 'bottom', ...
@@ -40,10 +45,10 @@ classdef ReplacementTextNodeAnchor < uint32
                 'baseline', ...
                 }, ...
                 { ...
-                    3
                     1
-                    2
-                    2
+                    -1
+                    0
+                    0
                 } ...
             );
             horizIdx = containers.Map({ ...
@@ -52,8 +57,8 @@ classdef ReplacementTextNodeAnchor < uint32
                 'right', ...
                 }, ...
                 { ...
-                    3
-                    2
+                    -1
+                    0
                     1
                 } ...
             );
@@ -75,6 +80,12 @@ classdef ReplacementTextNodeAnchor < uint32
             else
                 x = horizIdx(hStr);
                 y = vertIdx(vStr);
+                if doInvert
+                    x = -x;
+                    y = -y;
+                end
+                x = x + 2;
+                y = y + 2;
                 vertSel = {
                     ReplacementTextNodeAnchor.NorthWest, ReplacementTextNodeAnchor.North, ReplacementTextNodeAnchor.NorthEast
                     ReplacementTextNodeAnchor.West, ReplacementTextNodeAnchor.Mid, ReplacementTextNodeAnchor.East

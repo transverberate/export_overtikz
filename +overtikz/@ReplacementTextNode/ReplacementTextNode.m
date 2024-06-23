@@ -91,7 +91,14 @@ classdef ReplacementTextNode < overtikz.ReplacementInterface
             if ~isempty(axesNormalize)
                 position = dataToNorm(textHandle.Position, axesNormalize);
             else
-                position = textHandle.Position(1:2);
+                origUnits = textHandle.Units;
+                textHandle.Units = 'normalized';
+                if isprop(textHandle, 'X') && isprop(textHandle, 'Y')
+                    position = [textHandle.X(1), textHandle.Y(1)];
+                else
+                    position = textHandle.Position(1:2) + 0.5*(textHandle.Position(3:4));
+                end
+                textHandle.Units = origUnits;
             end
             
             origContent = textHandle.String;
